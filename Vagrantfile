@@ -1,6 +1,25 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+`git submodule init`
+`git submodule update`
+
+#############################################
+# Sample setup script:
+# require 'ostruct'
+
+# USER_CONFIG = OpenStruct.new({
+#  data_dir: "#{ File.expand_path '~' }/vagrant_data",
+# });
+#############################################
+
+if File.file?(File.expand_path '~/vagrant_setup.rb')
+  require '~/vagrant_setup.rb'
+else
+  require 'ostruct'
+  USER_CONFIG = OpenStruct.new(data_dir: (File.expand_path '~'))
+end
+
 Vagrant.configure("2") do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
@@ -47,6 +66,9 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
 
-  # NOTE: do this after provisioning to ensure NFS is setup
-  config.vm.synced_folder ".", "/host_folder", :nfs => true
+  # TODO: figure out why NFS sharing isn't working for a home-dir-based
+  #       folder
+  if USER_CONFIG.data_dir
+    config.vm.synced_folder USER_CONFIG.data_dir, "/host_folder"
+  end
 end
