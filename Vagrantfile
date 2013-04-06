@@ -23,12 +23,6 @@ Vagrant.configure("2") do |config|
   # config.vm.network :private_network, ip: "192.168.33.10"
   config.vm.network :private_network, ip: "192.168.50.2"
 
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/host_folder", :nfs => true
-
   # Run apt-get update every 30 days
   config.vm.provision :shell, :inline => %Q{
     cd ~
@@ -38,12 +32,21 @@ Vagrant.configure("2") do |config|
       sudo /usr/bin/apt-get update
       touch ~/.apt-get-updated
     fi
-    }
+  }
 
+  # Provision the machine and perform all configuration
   config.vm.provision :puppet do |puppet|
     puppet.options = "--verbose --debug"
     puppet.manifests_path = "manifests"
     puppet.manifest_file  = "base.pp"
     puppet.module_path = 'modules'
   end
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+
+  # NOTE: do this after provisioning to ensure NFS is setup
+  config.vm.synced_folder ".", "/host_folder", :nfs => true
 end
